@@ -8,3 +8,6 @@ streamlit
 python-dotenv
 pydantic
 requests
+pypdf
+faiss-cpu
+
