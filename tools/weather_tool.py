@@ -1,20 +1,17 @@
 """
 CrisisGuardian AI - Weather Tool
 ================================
-Provides weather forecasting and alert data. Supports future integration with MCP weather servers.
+Provides real-time weather data and alert integration.
+Supports OpenWeatherMap API with graceful fallback to mock data.
 """
-
-from typing import Dict, List, Any
-
-class WeatherTool:
-    """
-    Object-oriented handler for obtaining real-time meteorological data,
-    cyclone warnings, and flood precipitation metrics.
-    """
 
 import os
 import requests
-from typing import Dict, List, Any
+import logging
+from typing import Dict, List, Any, Optional
+from datetime import datetime
+
+logger = logging.getLogger("WeatherTool")
 
 class WeatherTool:
     """
@@ -22,7 +19,7 @@ class WeatherTool:
     cyclone warnings, and flood precipitation metrics.
     """
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: Optional[str] = None):
         """
         Initializes the weather tool with optional API authentication.
 
@@ -30,10 +27,12 @@ class WeatherTool:
             api_key (str, optional): Key for weather services (e.g. OpenWeatherMap).
         """
         self.api_key = api_key or os.getenv("OPENWEATHER_API_KEY")
+        self.timeout = 5
 
     def get_current_weather(self, location: str) -> Dict[str, Any]:
         """
         Retrieves the current weather state for a specified city or coordinates.
+        Falls back to mock data if API is unavailable.
 
         Args:
             location (str): Name of the city or coordinates (e.g. 'Miami, FL').
@@ -46,6 +45,7 @@ class WeatherTool:
             return self._get_mock_weather(location)
             
         try:
+            logger.info(f"Fetching real weather for {location}")
             url = "https://api.openweathermap.org/data/2.5/weather"
             params = {
                 "q": location,
